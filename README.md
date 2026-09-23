@@ -22,6 +22,6 @@ Nje web aplikacion per menaxhimin e detyrave me autentifikim perdoruesi, i ndert
 
 ## Funksionet
 
-# /includes
+## /includes
 Brenda folderit /includes gjendet file functions.php i cili ka funksione gjenerale qe perdoren me se shumti.
 
