@@ -69,7 +69,7 @@ if (!empty($_SESSION['flash_success'])) {
 </head>
 <body>
 <nav class="navbar">
-    <a href="dashboard.php" class="logo">📝 ToDo</a>
+    <a href="dashboard.php" class="logo">📝 To-Do List</a>
     <div class="nav-links">
         <span>Pershendetje, <strong><?= e($username) ?></strong></span>
         <a href="logout.php" class="btn-outline">Logout</a>
@@ -121,7 +121,7 @@ if (!empty($_SESSION['flash_success'])) {
                         </button>
                     </form>
 
-                    <!-- Përmbajtja -->
+                    <!-- Permbajtja -->
                     <div class="task-body">
                         <div class="task-title">
                             <?= e($task['title']) ?>
@@ -145,7 +145,7 @@ if (!empty($_SESSION['flash_success'])) {
                         </div>
                     </div>
 
-                    <!-- Veprime -->
+                    <!-- Veprimet -->
                     <div class="task-actions">
                         <a href="edit_task.php?id=<?= (int)$task['id'] ?>" class="icon-btn" title="Edito">✏️</a>
 

@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shto detyrë — ToDo</title>
+    <title>Shto detyre - To-Do List</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
@@ -90,14 +90,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 <nav class="navbar">
-    <a href="dashboard.php" class="logo">📝 ToDo</a>
+    <a href="dashboard.php" class="logo">📝 To-Do List</a>
     <div class="nav-links">
         <a href="dashboard.php">← Kthehu</a>
     </div>
 </nav>
 
 <main class="dashboard">
-    <h1>Shto detyrë të re</h1>
+    <h1>Shto detyre te re</h1>
 
     <?php if (!empty($errors)): ?>
         <div class="alert error">
@@ -114,7 +114,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="text" name="title" maxlength="255"
                value="<?= e($old['title']) ?>" required autofocus>
 
-        <label>Përshkrimi (opsional)</label>
+        <label>Pershkrimi (opsional)</label>
         <textarea name="description" rows="4"><?= e($old['description']) ?></textarea>
 
         <label>Prioriteti</label>

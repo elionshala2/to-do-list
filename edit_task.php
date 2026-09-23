@@ -11,14 +11,14 @@ $user_id = $_SESSION['user_id'];
 $task_id = (int)($_GET['id'] ?? $_POST['id'] ?? 0);
 $errors  = [];
 
-// Nëse ID e pavlefshme
+// Nese ID e pavlefshme
 if ($task_id <= 0) {
     $_SESSION['flash_success'] = 'Detyra nuk u gjet.';
     redirect('dashboard.php');
 }
 
 // -------------------------------------------------
-// 1. Ngarko taskun — VETËM nëse i përket userit aktual (IDOR protection)
+// 1. Ngarko taskun — VETEM nese i perket userit
 // -------------------------------------------------
 function load_task($conn, $task_id, $user_id) {
     $stmt = $conn->prepare(
@@ -38,12 +38,12 @@ function load_task($conn, $task_id, $user_id) {
 $task = load_task($conn, $task_id, $user_id);
 
 if (!$task) {
-    // O nuk ekziston, o nuk i përket këtij useri
+    // ose nuk ekziston, ose si perket kti useri
     $_SESSION['flash_success'] = 'Detyra nuk u gjet.';
     redirect('dashboard.php');
 }
 
-// Vlerat fillestare të formës
+// Vlerat fillestare te formes
 $old = [
     'title'       => $task['title'],
     'description' => $task['description'] ?? '',
@@ -52,12 +52,12 @@ $old = [
 ];
 
 // -------------------------------------------------
-// 2. Përpunimi i formës (POST)
+// Dergimi i formes
 // -------------------------------------------------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (!verify_csrf($_POST['csrf'] ?? '')) {
-        $errors[] = 'Kërkesë e pavlefshme. Provo përsëri.';
+        $errors[] = 'Kerkese e pavlefshme. Provo perseri.';
     } else {
         $old['title']       = trim($_POST['title'] ?? '');
         $old['description'] = trim($_POST['description'] ?? '');
@@ -66,19 +66,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Validime
         if ($old['title'] === '') {
-            $errors[] = 'Titulli është i detyrueshëm.';
+            $errors[] = 'Titulli eshte i detyrueshem.';
         } elseif (mb_strlen($old['title']) > 255) {
-            $errors[] = 'Titulli nuk duhet të kalojë 255 karaktere.';
+            $errors[] = 'Titulli nuk duhet te kaloje 255 karaktere.';
         }
 
         if (!in_array($old['priority'], ['low', 'medium', 'high'], true)) {
-            $errors[] = 'Prioritet i pavlefshëm.';
+            $errors[] = 'Prioritet i pavlefshem.';
         }
 
         if ($old['due_date'] !== '') {
             $d = DateTime::createFromFormat('Y-m-d', $old['due_date']);
             if (!$d || $d->format('Y-m-d') !== $old['due_date']) {
-                $errors[] = 'Datë e pavlefshme.';
+                $errors[] = 'Date e pavlefshme.';
             }
         }
 
@@ -111,14 +111,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             } catch (mysqli_sql_exception $e) {
                 error_log("Edit task error: " . $e->getMessage());
-                $errors[] = 'Diçka shkoi gabim. Provo përsëri.';
+                $errors[] = 'Diqka shkoi gabim. Provo perseri.';
             }
         }
     }
 }
 ?>
 <!DOCTYPE html>
-<html lang="sq">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -130,14 +130,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 <nav class="navbar">
-    <a href="dashboard.php" class="logo">📝 ToDo</a>
+    <a href="dashboard.php" class="logo">📝 To-Do List</a>
     <div class="nav-links">
         <a href="dashboard.php">← Kthehu</a>
     </div>
 </nav>
 
 <main class="dashboard">
-    <h1>Edito detyrën</h1>
+    <h1>Edito detyren</h1>
 
     <?php if (!empty($errors)): ?>
         <div class="alert error">
@@ -155,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="text" name="title" maxlength="255"
                value="<?= e($old['title']) ?>" required autofocus>
 
-        <label>Përshkrimi (opsional)</label>
+        <label>Pershkrimi (opsional)</label>
         <textarea name="description" rows="4"><?= e($old['description']) ?></textarea>
 
         <label>Prioriteti</label>

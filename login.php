@@ -85,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 <div class="auth-box">
-    <h1>Hyr</h1>
+    <h1>Login</h1>
 
     <?php if ($success): ?>
         <div class="alert success"><p><?= e($success) ?></p></div>
@@ -111,11 +111,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="password" name="password"
                autocomplete="current-password" required>
 
-        <button type="submit">Hyr</button>
+        <button type="submit">Login</button>
     </form>
 
     <p>Nuk ke llogari? <a href="signup.php">Regjistrohu</a></p>
-    <p><a href="index.php">← Kthehu në faqen kryesore</a></p>
+    <p><a href="index.php">← Kthehu ne faqen kryesore</a></p>
 </div>
 </body>
 </html>

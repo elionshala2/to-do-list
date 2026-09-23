@@ -101,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 <div class="auth-box">
-    <h1>Krijo llogari</h1>
+    <h1>Signup</h1>
 
     <?php if (!empty($errors)): ?>
         <div class="alert error">
@@ -131,8 +131,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <button type="submit">Regjistrohu</button>
     </form>
 
-    <p>Ke llogari? <a href="login.php">Hyr</a></p>
-    <p><a href="index.php">← Kthehu në faqen kryesore</a></p>
+    <p>Ke llogari? <a href="login.php">Login</a></p>
+    <p><a href="index.php">← Kthehu ne faqen kryesore</a></p>
 </div>
 <script src="assets/script.js"></script>
 </body>
