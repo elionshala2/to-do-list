@@ -80,7 +80,7 @@ if (!empty($_SESSION['flash_success'])) {
 
     <div class="dashboard-header">
         <h1>Detyrat e mia</h1>
-        <a href="add_task.php" class="btn">+ Shto detyrë</a>
+        <a href="tasks/add_task.php" class="btn">+ Shto detyrë</a>
     </div>
 
     <?php if ($flash): ?>
@@ -98,7 +98,7 @@ if (!empty($_SESSION['flash_success'])) {
         <div class="empty-state">
             <p>📭 Nuk ka detyra per kete filter.</p>
             <?php if ($filter === 'all'): ?>
-                <p><a href="add_task.php">Shto detyren e pare</a></p>
+                <p><a href="tasks/add_task.php">Shto detyren e pare</a></p>
             <?php endif; ?>
         </div>
     <?php else: ?>
@@ -113,7 +113,7 @@ if (!empty($_SESSION['flash_success'])) {
                 <li class="task-item <?= $isDone ? 'completed' : '' ?>">
 
                     <!-- Toggle complete -->
-                    <form action="toggle_task.php" method="POST" class="task-toggle">
+                    <form action="tasks/toggle_task.php" method="POST" class="task-toggle">
                         <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
                         <input type="hidden" name="id"   value="<?= (int)$task['id'] ?>">
                         <button type="submit" class="check-btn" title="Ndrysho statusin">
@@ -147,10 +147,10 @@ if (!empty($_SESSION['flash_success'])) {
 
                     <!-- Veprimet -->
                     <div class="task-actions">
-                        <a href="edit_task.php?id=<?= (int)$task['id'] ?>" class="icon-btn" title="Edito">✏️</a>
+                        <a href="tasks/edit_task.php?id=<?= (int)$task['id'] ?>" class="icon-btn" title="Edito">✏️</a>
 
-                        <form action="delete_task.php" method="POST" class="inline-form"
-                              onsubmit="return confirm('Fshij këtë detyrë?');">
+                        <form action="tasks/delete_task.php" method="POST" class="inline-form"
+                              onsubmit="return confirm('Fshij kete detyre?');">
                             <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
                             <input type="hidden" name="id"   value="<?= (int)$task['id'] ?>">
                             <button type="submit" class="icon-btn" title="Fshij">🗑️</button>
@@ -163,5 +163,6 @@ if (!empty($_SESSION['flash_success'])) {
     <?php endif; ?>
 
 </main>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>
 </body>
 </html>

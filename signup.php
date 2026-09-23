@@ -100,6 +100,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
+    <nav class="navbar">
+    <a href="index.php" class="logo">To-Do List</a>
+    <div class="nav-links">
+        <a href="index.php" class="btn-outline">← Kthehu</a>
+        <a href="login.php" class="btn">Login</a>
+    </div>
+</nav>
 <div class="auth-box">
     <h1>Signup</h1>
 
@@ -135,5 +142,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <p><a href="index.php">← Kthehu ne faqen kryesore</a></p>
 </div>
 <script src="assets/script.js"></script>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>
 </body>
 </html>

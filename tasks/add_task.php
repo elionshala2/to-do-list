@@ -1,8 +1,9 @@
 <?php
 // add_task.php
 
-require_once __DIR__ . '/config.php';
-require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/footer.php';
 
 session_start();
 require_login();
@@ -67,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->close();
 
                 $_SESSION['flash_success'] = 'Detyra u shtua me sukses!';
-                redirect('dashboard.php');
+                redirect('../dashboard.php');
 
             } catch (mysqli_sql_exception $e) {
                 error_log("Add task error: " . $e->getMessage());
@@ -86,18 +87,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
 <nav class="navbar">
-    <a href="dashboard.php" class="logo">📝 To-Do List</a>
+    <a href="../dashboard.php" class="logo">To-Do List</a>
     <div class="nav-links">
-        <a href="dashboard.php">← Kthehu</a>
+        <a href="../dashboard.php" class="btn-outline">← Kthehu</a>
     </div>
 </nav>
 
-<main class="dashboard">
-    <h1>Shto detyre te re</h1>
+<main class="dashboard page-center">
+    <div class="page-header">
+        <h1>Shto detyre te re</h1>
+    </div>
 
     <?php if (!empty($errors)): ?>
         <div class="alert error">
@@ -128,10 +131,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="date" name="due_date" value="<?= e($old['due_date']) ?>">
 
         <div class="form-actions">
-            <a href="dashboard.php" class="btn-outline">Anulo</a>
+            <a href="../dashboard.php" class="btn-outline">Anulo</a>
             <button type="submit" class="btn">Ruaj</button>
         </div>
     </form>
 </main>
+<?php require_once __DIR__ . '/../includes/footer.php'; ?>
 </body>
 </html>

@@ -84,6 +84,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <nav class="navbar">
+    <a href="index.php" class="logo">To-Do List</a>
+    <div class="nav-links">
+        <a href="index.php" class="btn-outline">← Kthehu</a>
+        <a href="signup.php" class="btn">Signup</a>
+    </div>
+</nav>
 <div class="auth-box">
     <h1>Login</h1>
 
@@ -117,5 +124,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <p>Nuk ke llogari? <a href="signup.php">Regjistrohu</a></p>
     <p><a href="index.php">← Kthehu ne faqen kryesore</a></p>
 </div>
+<?php require_once __DIR__ . '/includes/footer.php'; ?>
 </body>
 </html>
