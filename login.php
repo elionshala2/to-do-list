@@ -6,7 +6,7 @@ require_once __DIR__ . '/includes/functions.php';
 
 session_start();
 
-// Nese tashme i kyqyur shko ne dashboard
+// Nese tashme i kyqyur shkon ne dashboard
 if (!empty($_SESSION['user_id'])) {
     redirect('dashboard.php');
 }
@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = 'Plotëso të gjitha fushat.';
         } else {
             try {
-                // Kërko user-in ne databaze
+                // Kerko user-in ne databaze
                 $stmt = $conn->prepare(
                     "SELECT id, username, password FROM regjistrimi WHERE email = ? LIMIT 1"
                 );

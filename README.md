@@ -1,4 +1,5 @@
 # To-Do-List
+Nje web aplikacion per menaxhimin e detyrave me autentifikim perdoruesi, i ndertuar me HTML, CSS, Javascript, PhP dhe MySQL.
 
 ## Kerkesat
 - Faqja Kryesore index.html, qe e fton perdoruesin me kriju llogari
@@ -18,3 +19,9 @@
 - Useri 1 nuk mund ti shoh taskat e Userit 2
 - Ne deshtim mesazh i pergjithshem "Kredencialet e pavlefshme"
 - Rate-Limiting max 5 tentativa per IP
+
+## Funksionet
+
+# /includes
+Brenda folderit /includes gjendet file functions.php i cili ka funksione gjenerale qe perdoren me se shumti.
+
