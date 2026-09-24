@@ -90,12 +90,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
-<nav class="navbar">
+<!--<nav class="navbar">
     <a href="../dashboard.php" class="logo">To-Do List</a>
     <div class="nav-links">
         <a href="../dashboard.php" class="btn-outline">← Kthehu</a>
     </div>
-</nav>
+</nav> -->
+<?php require_once __DIR__ . '/../includes/navbar.php'; ?>
 
 <main class="dashboard page-center">
     <div class="page-header">

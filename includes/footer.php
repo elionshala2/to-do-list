@@ -9,7 +9,9 @@
         </div>
 
         <div class="footer-links">
-            <a href="index.php">Kryefaqja</a>
+            <a href="index.php">Home</a>
+            <a href="dashboard.php">Dashboard</a>
+            <a href="categories.php">Categories</a>
             <a href="login.php">Login</a>
             <a href="signup.php">Sign Up</a>
         </div>

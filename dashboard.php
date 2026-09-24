@@ -68,13 +68,14 @@ if (!empty($_SESSION['flash_success'])) {
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-<nav class="navbar">
+<!--<nav class="navbar">
     <a href="dashboard.php" class="logo">📝 To-Do List</a>
     <div class="nav-links">
         <span>Pershendetje, <strong><?= e($username) ?></strong></span>
         <a href="logout.php" class="btn-outline">Logout</a>
     </div>
-</nav>
+</nav> -->
+<?php require_once __DIR__ . '/includes/navbar.php'; ?>
 
 <main class="dashboard">
 

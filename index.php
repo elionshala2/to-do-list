@@ -25,7 +25,7 @@ $username   = $_SESSION['username'] ?? '';
 </head>
 <body>
 
-<nav class="navbar">
+<!--<nav class="navbar">
     <a href="index.php" class="logo">To-Do List</a>
     <div class="nav-links">
         <?php if ($isLoggedIn): ?>
@@ -37,7 +37,8 @@ $username   = $_SESSION['username'] ?? '';
             <a href="signup.php" class="btn">Sign Up</a>
         <?php endif; ?>
     </div>
-</nav>
+</nav> -->
+<?php require_once __DIR__ . '/includes/navbar.php'; ?>
 
 <main class="landing">
 
