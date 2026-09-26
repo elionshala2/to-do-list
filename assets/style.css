@@ -1201,3 +1201,14 @@ main, .dashboard, .landing, .auth-box {
     .navbar .btn-outline { padding: 6px 12px; font-size: 12px; height: 32px; }
     .navbar .logo { font-size: 16px; }
 }
+
+.btn-active {
+    background: linear-gradient(135deg, var(--accent), #6366f1);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+}
+.btn-active:hover {
+    color: #fff;
+    transform: none;
+}
