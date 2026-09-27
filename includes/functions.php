@@ -27,6 +27,9 @@ function redirect($url) {
 // Kontrollon nese useri eshte i kyqur ne llogari
 function require_login() {
     if (empty($_SESSION['user_id'])) {
-        redirect('login.php');
+        $prefix = str_contains($_SERVER['SCRIPT_NAME'], '/tasks/') ? '../' : '';
+        redirect($prefix . 'login.php');
     }
+}
+
 }
