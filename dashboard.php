@@ -9,6 +9,19 @@ require_login();
 
 $user_id  = $_SESSION['user_id'];
 $username = $_SESSION['username'];
+$errors = [];
+$categories = [];
+$inbox_id = 0;
+
+try {
+    ensure_categories_schema($conn);
+    $inbox_id = ensure_user_inbox_category($conn, $user_id);
+    assign_inbox_to_uncategorized_tasks($conn, $user_id, $inbox_id);
+    $categories = get_user_categories($conn, $user_id);
+} catch (mysqli_sql_exception $e) {
+    error_log("Dashboard setup error: " . $e->getMessage());
+    $errors[] = 'Diçka shkoi gabim. Provo përsëri.';
+}
 
 // filtri (all / active / completed)
 $filter = $_GET['filter'] ?? 'all';
@@ -16,37 +29,78 @@ if (!in_array($filter, ['all', 'active', 'completed'], true)) {
     $filter = 'all';
 }
 
-// nderto query sipas filtrit
-$sql = "SELECT id, title, description, priority, due_date, is_completed, created_at
-        FROM tasks
-        WHERE user_id = ?";
-
-if ($filter === 'active') {
-    $sql .= " AND is_completed = 0";
-} elseif ($filter === 'completed') {
-    $sql .= " AND is_completed = 1";
+$category_filter = (int)($_GET['category_id'] ?? 0);
+$date_filter_raw = trim($_GET['due_date'] ?? '');
+$date_filter = '';
+if ($date_filter_raw !== '') {
+    $d = DateTime::createFromFormat('Y-m-d', $date_filter_raw);
+    if ($d && $d->format('Y-m-d') === $date_filter_raw) {
+        $date_filter = $date_filter_raw;
+    }
 }
 
-$sql .= " ORDER BY is_completed ASC,
-                   FIELD(priority, 'high', 'medium', 'low'),
-                   due_date IS NULL, due_date ASC,
-                   created_at DESC";
+// nderto query sipas filtrit
+$sql = "SELECT t.id, t.title, t.description, t.priority, t.due_date, t.is_completed, t.created_at,
+               t.category_id, c.name AS category_name
+        FROM tasks
+        LEFT JOIN categories c ON c.id = t.category_id AND c.user_id = t.user_id
+        WHERE t.user_id = ?";
+$params = [$user_id];
+$types = "i";
+
+if ($filter === 'active') {
+    $sql .= " AND t.is_completed = 0";
+} elseif ($filter === 'completed') {
+    $sql .= " AND t.is_completed = 1";
+}
+
+if ($category_filter > 0) {
+    $sql .= " AND t.category_id = ?";
+    $params[] = $category_filter;
+    $types .= "i";
+}
+
+if ($date_filter !== '') {
+    $sql .= " AND t.due_date = ?";
+    $params[] = $date_filter;
+    $types .= "s";
+}
+
+$sql .= " ORDER BY t.is_completed ASC,
+                   FIELD(t.priority, 'high', 'medium', 'low'),
+                   t.due_date IS NULL, t.due_date ASC,
+                   t.created_at DESC";
 
 $tasks = [];
 
-try {
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+if (empty($errors)) {
+    try {
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    while ($row = $result->fetch_assoc()) {
-        $tasks[] = $row;
+        while ($row = $result->fetch_assoc()) {
+            if (empty($row['category_name'])) {
+                $row['category_name'] = 'Inbox';
+            }
+            $tasks[] = $row;
+        }
+        $stmt->close();
+    } catch (mysqli_sql_exception $e) {
+        error_log("Dashboard error: " . $e->getMessage());
+        $errors[] = 'Diçka shkoi gabim. Provo përsëri.';
     }
-    $stmt->close();
-} catch (mysqli_sql_exception $e) {
-    error_log("Dashboard error: " . $e->getMessage());
-    $tasks = [];
+}
+
+$selected_category = 0;
+if ($category_filter > 0) {
+    foreach ($categories as $category) {
+        if ((int)$category['id'] === $category_filter) {
+            $selected_category = $category_filter;
+            break;
+        }
+    }
 }
 
 // flash nga veprimet (add/edit/delete)
@@ -88,12 +142,43 @@ if (!empty($_SESSION['flash_success'])) {
         <div class="alert success"><p><?= e($flash) ?></p></div>
     <?php endif; ?>
 
+    <?php if (!empty($errors)): ?>
+        <div class="alert error">
+            <?php foreach ($errors as $err): ?>
+                <p><?= e($err) ?></p>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+
     <!-- Filtra -->
     <div class="filters">
-        <a href="?filter=all"       class="<?= $filter === 'all'       ? 'active' : '' ?>">Te gjitha</a>
-        <a href="?filter=active"    class="<?= $filter === 'active'    ? 'active' : '' ?>">Aktive</a>
-        <a href="?filter=completed" class="<?= $filter === 'completed' ? 'active' : '' ?>">Te kryera</a>
+        <a href="?filter=all&category_id=<?= (int)$selected_category ?>&due_date=<?= e($date_filter) ?>" class="<?= $filter === 'all' ? 'active' : '' ?>">Te gjitha</a>
+        <a href="?filter=active&category_id=<?= (int)$selected_category ?>&due_date=<?= e($date_filter) ?>" class="<?= $filter === 'active' ? 'active' : '' ?>">Aktive</a>
+        <a href="?filter=completed&category_id=<?= (int)$selected_category ?>&due_date=<?= e($date_filter) ?>" class="<?= $filter === 'completed' ? 'active' : '' ?>">Te kryera</a>
     </div>
+
+    <form method="GET" class="filter-form">
+        <input type="hidden" name="filter" value="<?= e($filter) ?>">
+        <div class="filter-field">
+            <label for="category_id">Kategoria</label>
+            <select name="category_id" id="category_id">
+                <option value="0">Te gjitha kategorite</option>
+                <?php foreach ($categories as $category): ?>
+                    <option value="<?= (int)$category['id'] ?>" <?= $selected_category === (int)$category['id'] ? 'selected' : '' ?>>
+                        <?= e($category['name']) ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+        <div class="filter-field">
+            <label for="due_date">Data e detyres</label>
+            <input type="date" name="due_date" id="due_date" value="<?= e($date_filter) ?>">
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn">Filtro</button>
+            <a href="dashboard.php?filter=<?= e($filter) ?>" class="btn-outline">Pastro</a>
+        </div>
+    </form>
 
     <?php if (empty($tasks)): ?>
         <div class="empty-state">
@@ -128,6 +213,9 @@ if (!empty($_SESSION['flash_success'])) {
                             <?= e($task['title']) ?>
                             <span class="priority priority-<?= e($task['priority']) ?>">
                                 <?= e($task['priority']) ?>
+                            </span>
+                            <span class="priority priority-medium">
+                                <?= e($task['category_name']) ?>
                             </span>
                         </div>
 

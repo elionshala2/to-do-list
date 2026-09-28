@@ -9,37 +9,31 @@ $user_id = $_SESSION['user_id'];
 $errors = [];
 
 try {
-    $conn->query(
-        "CREATE TABLE IF NOT EXISTS categories (
-            id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-            user_id INT NOT NULL,
-            name VARCHAR(100) NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            UNIQUE KEY uniq_user_category (user_id, name),
-            INDEX idx_category_user (user_id)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
-    );
+    ensure_categories_schema($conn);
+    $inbox_id = ensure_user_inbox_category($conn, $user_id);
+    assign_inbox_to_uncategorized_tasks($conn, $user_id, $inbox_id);
 } catch (mysqli_sql_exception $e) {
-    error_log("Create categories table error: " . $e->getMessage());
-    $errors[] = 'Diqka shkoi gabim. Provo perseri.';
+    error_log("Categories setup error: " . $e->getMessage());
+    $errors[] = 'Diçka shkoi gabim. Provo përsëri.';
 }
 
 $form = [
     'name' => '',
     'mode' => 'create',
     'id' => 0,
+    'is_default' => 0,
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errors)) {
     if (!verify_csrf($_POST['csrf'] ?? '')) {
-        $errors[] = 'Kerkese e pavlefshme. Provo perseri.';
+        $errors[] = 'Kërkesë e pavlefshme. Provo përsëri.';
     } else {
         $action = $_POST['action'] ?? '';
         $category_id = (int)($_POST['id'] ?? 0);
         $name = trim($_POST['name'] ?? '');
 
         if (!in_array($action, ['create', 'update', 'delete'], true)) {
-            $errors[] = 'Veprim i pavlefshem.';
+            $errors[] = 'Veprim i pavlefshëm.';
         }
 
         if (in_array($action, ['create', 'update'], true)) {
@@ -48,9 +42,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errors)) {
             $form['id'] = $category_id;
 
             if ($name === '') {
-                $errors[] = 'Emri i kategorise eshte i detyrueshem.';
+                $errors[] = 'Emri i kategorisë është i detyrueshëm.';
             } elseif (mb_strlen($name) > 100) {
-                $errors[] = 'Emri i kategorise nuk duhet te kaloje 100 karaktere.';
+                $errors[] = 'Emri i kategorisë nuk duhet të kalojë 100 karaktere.';
             }
         }
 
@@ -59,20 +53,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errors)) {
         }
 
         if (empty($errors)) {
+            $transaction_started = false;
             try {
+                $target_default = 0;
+                if (in_array($action, ['update', 'delete'], true)) {
+                    $stmt = $conn->prepare(
+                        "SELECT is_default
+                         FROM categories
+                         WHERE id = ? AND user_id = ?
+                         LIMIT 1"
+                    );
+                    $stmt->bind_param("ii", $category_id, $user_id);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                    $found = $result->fetch_assoc();
+                    $stmt->close();
+
+                    if (!$found) {
+                        $errors[] = 'Kategoria nuk u gjet.';
+                    } else {
+                        $target_default = (int)$found['is_default'];
+                    }
+                }
+
+                if (!empty($errors)) {
+                    throw new RuntimeException('Category validation failed.');
+                }
+
                 if ($action === 'create') {
                     $stmt = $conn->prepare(
-                        "INSERT INTO categories (user_id, name) VALUES (?, ?)"
+                        "INSERT INTO categories (user_id, name, is_default) VALUES (?, ?, 0)"
                     );
                     $stmt->bind_param("is", $user_id, $name);
                     $stmt->execute();
                     $stmt->close();
 
-                    $_SESSION['flash_success'] = 'Kategoria u shtua me sukses!';
+                    $_SESSION['flash_success'] = 'Kategoria u shtua me sukses.';
                     redirect('categories.php');
                 }
 
                 if ($action === 'update') {
+                    if ($target_default === 1) {
+                        $errors[] = 'Kategoria Inbox nuk mund të riemërtohet.';
+                        throw new RuntimeException('Cannot rename inbox.');
+                    }
+
                     $stmt = $conn->prepare(
                         "UPDATE categories
                          SET name = ?
@@ -82,11 +107,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errors)) {
                     $stmt->execute();
                     $stmt->close();
 
-                    $_SESSION['flash_success'] = 'Kategoria u perditesua me sukses!';
+                    $_SESSION['flash_success'] = 'Kategoria u përditësua me sukses.';
                     redirect('categories.php');
                 }
 
                 if ($action === 'delete') {
+                    if ($target_default === 1) {
+                        $errors[] = 'Kategoria Inbox nuk mund të fshihet.';
+                        throw new RuntimeException('Cannot delete inbox.');
+                    }
+
+                    $conn->begin_transaction();
+                    $transaction_started = true;
+
+                    $stmt = $conn->prepare(
+                        "UPDATE tasks
+                         SET category_id = ?
+                         WHERE user_id = ? AND category_id = ?"
+                    );
+                    $stmt->bind_param("iii", $inbox_id, $user_id, $category_id);
+                    $stmt->execute();
+                    $stmt->close();
+
                     $stmt = $conn->prepare(
                         "DELETE FROM categories
                          WHERE id = ? AND user_id = ?"
@@ -95,15 +137,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errors)) {
                     $stmt->execute();
                     $stmt->close();
 
-                    $_SESSION['flash_success'] = 'Kategoria u fshi me sukses!';
+                    $conn->commit();
+                    $transaction_started = false;
+
+                    $_SESSION['flash_success'] = 'Kategoria u fshi me sukses.';
                     redirect('categories.php');
                 }
+            } catch (RuntimeException $e) {
+                if ($transaction_started) {
+                    $conn->rollback();
+                }
             } catch (mysqli_sql_exception $e) {
+                if ($transaction_started) {
+                    $conn->rollback();
+                }
                 error_log("Category action error: " . $e->getMessage());
                 if ((int)$e->getCode() === 1062) {
-                    $errors[] = 'Kjo kategori ekziston tashme.';
+                    $errors[] = 'Kjo kategori ekziston tashmë.';
                 } else {
-                    $errors[] = 'Diqka shkoi gabim. Provo perseri.';
+                    $errors[] = 'Diçka shkoi gabim. Provo përsëri.';
                 }
             }
         }
@@ -115,7 +167,7 @@ if (empty($errors) && isset($_GET['edit'])) {
     if ($edit_id > 0) {
         try {
             $stmt = $conn->prepare(
-                "SELECT id, name
+                "SELECT id, name, is_default
                  FROM categories
                  WHERE id = ? AND user_id = ?
                  LIMIT 1"
@@ -130,10 +182,11 @@ if (empty($errors) && isset($_GET['edit'])) {
                 $form['mode'] = 'edit';
                 $form['id'] = (int)$category['id'];
                 $form['name'] = $category['name'];
+                $form['is_default'] = (int)$category['is_default'];
             }
         } catch (mysqli_sql_exception $e) {
             error_log("Load category error: " . $e->getMessage());
-            $errors[] = 'Diqka shkoi gabim. Provo perseri.';
+            $errors[] = 'Diçka shkoi gabim. Provo përsëri.';
         }
     }
 }
@@ -141,22 +194,10 @@ if (empty($errors) && isset($_GET['edit'])) {
 $categories = [];
 if (empty($errors)) {
     try {
-        $stmt = $conn->prepare(
-            "SELECT id, name, created_at
-             FROM categories
-             WHERE user_id = ?
-             ORDER BY created_at DESC, id DESC"
-        );
-        $stmt->bind_param("i", $user_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        while ($row = $result->fetch_assoc()) {
-            $categories[] = $row;
-        }
-        $stmt->close();
+        $categories = get_user_categories($conn, $user_id);
     } catch (mysqli_sql_exception $e) {
         error_log("List categories error: " . $e->getMessage());
-        $errors[] = 'Diqka shkoi gabim. Provo perseri.';
+        $errors[] = 'Diçka shkoi gabim. Provo përsëri.';
     }
 }
 
@@ -206,13 +247,17 @@ if (!empty($_SESSION['flash_success'])) {
                 <input type="hidden" name="id" value="<?= (int)$form['id'] ?>">
 
                 <label>Emri i kategorise *</label>
-                <input type="text" name="name" maxlength="100" value="<?= e($form['name']) ?>" required>
+                <input type="text" name="name" maxlength="100" value="<?= e($form['name']) ?>" required <?= $form['is_default'] === 1 ? 'disabled' : '' ?>>
 
                 <div class="form-actions category-actions">
                     <?php if ($form['mode'] === 'edit'): ?>
                         <a href="categories.php" class="btn-outline">Anulo</a>
                     <?php endif; ?>
-                    <button type="submit" class="btn"><?= $form['mode'] === 'edit' ? 'Ruaj ndryshimet' : 'Shto kategorine' ?></button>
+                    <?php if ($form['mode'] === 'edit' && $form['is_default'] === 1): ?>
+                        <button type="button" class="btn" disabled>Inbox është e mbrojtur</button>
+                    <?php else: ?>
+                        <button type="submit" class="btn"><?= $form['mode'] === 'edit' ? 'Ruaj ndryshimet' : 'Shto kategorinë' ?></button>
+                    <?php endif; ?>
                 </div>
             </form>
         </section>
@@ -230,6 +275,9 @@ if (!empty($_SESSION['flash_success'])) {
                             <div class="task-body">
                                 <div class="task-title">
                                     <?= e($category['name']) ?>
+                                    <?php if ((int)$category['is_default'] === 1): ?>
+                                        <span class="priority priority-medium">DEFAULT</span>
+                                    <?php endif; ?>
                                 </div>
                                 <div class="task-meta">
                                     <span>🕒 <?= e($category['created_at']) ?></span>
@@ -237,13 +285,17 @@ if (!empty($_SESSION['flash_success'])) {
                             </div>
 
                             <div class="task-actions category-item-actions">
-                                <a href="categories.php?edit=<?= (int)$category['id'] ?>" class="icon-btn" title="Edito">✏️</a>
-                                <form method="POST" class="inline-form" onsubmit="return confirm('Fshij kete kategori?');">
-                                    <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
-                                    <input type="hidden" name="action" value="delete">
-                                    <input type="hidden" name="id" value="<?= (int)$category['id'] ?>">
-                                    <button type="submit" class="icon-btn" title="Fshij">🗑️</button>
-                                </form>
+                                <?php if ((int)$category['is_default'] === 1): ?>
+                                    <span class="category-locked">E mbrojtur</span>
+                                <?php else: ?>
+                                    <a href="categories.php?edit=<?= (int)$category['id'] ?>" class="icon-btn" title="Edito">✏️</a>
+                                    <form method="POST" class="inline-form" onsubmit="return confirm('Fshij kete kategori? Detyrat kalojne te Inbox.');">
+                                        <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="id" value="<?= (int)$category['id'] ?>">
+                                        <button type="submit" class="icon-btn" title="Fshij">🗑️</button>
+                                    </form>
+                                <?php endif; ?>
                             </div>
                         </li>
                     <?php endforeach; ?>

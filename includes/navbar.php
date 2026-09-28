@@ -12,20 +12,20 @@ $current    = basename($_SERVER['PHP_SELF']);
 
         <div class="nav-main">
             <a href="index.php"
-               class="btn-outline <?= $current === 'index.php' ? 'btn-active' : '' ?>">Home</a>
+               class="btn-outline <?= $current === 'index.php' ? 'active' : '' ?>">Home</a>
 
             <?php if ($isLoggedIn): ?>
                 <a href="dashboard.php"
-                   class="btn-outline <?= $current === 'dashboard.php' ? 'btn-active' : '' ?>">Dashboard</a>
+                   class="btn-outline <?= $current === 'dashboard.php' ? 'active' : '' ?>">Dashboard</a>
 
                 <div class="nav-dropdown">
                     <a href="categories.php"
-                       class="btn-outline <?= in_array($current, ['categories.php','add_category.php','edit_category.php']) ? 'btn-active' : '' ?>">
+                       class="btn-outline <?= $current === 'categories.php' ? 'active' : '' ?>">
                         Kategoritë <span class="caret"></span>
                     </a>
                     <div class="nav-dropdown-menu">
                         <a href="categories.php">Shiko te gjitha</a>
-                        <a href="add_category.php">+ Shto kategori</a>
+                        <a href="categories.php">+ Shto kategori</a>
                     </div>
                 </div>
             <?php endif; ?>
@@ -38,9 +38,9 @@ $current    = basename($_SERVER['PHP_SELF']);
             <a href="logout.php" class="btn-outline">Logout</a>
         <?php else: ?>
             <a href="login.php"
-               class="btn-outline <?= $current === 'login.php' ? 'btn-active' : '' ?>">Login</a>
+               class="btn-outline <?= $current === 'login.php' ? 'active' : '' ?>">Login</a>
             <a href="signup.php"
-               class="btn-outline <?= $current === 'signup.php' ? 'btn-active' : '' ?>">Sign Up</a>
+               class="btn-outline <?= $current === 'signup.php' ? 'active' : '' ?>">Sign Up</a>
         <?php endif; ?>
     </div>
 </nav>

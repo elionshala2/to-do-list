@@ -486,6 +486,46 @@ a:hover { color: #22d3ee; text-decoration: none; }
     box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
 }
 
+.filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
+    margin-bottom: 26px;
+    padding: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+}
+
+.filter-field {
+    min-width: 180px;
+    flex: 1;
+}
+
+.filter-field label {
+    margin: 0 0 6px;
+    font-size: 12px;
+    color: var(--text-dim);
+}
+
+.filter-field input,
+.filter-field select {
+    margin: 0;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.filter-actions .btn,
+.filter-actions .btn-outline {
+    margin: 0;
+    width: auto;
+}
+
 /* =========================================================
    TASK LISTA
    ========================================================= */
@@ -772,6 +812,12 @@ a:hover { color: #22d3ee; text-decoration: none; }
     opacity: 1;
 }
 
+.category-locked {
+    color: var(--text-dim);
+    font-size: 12px;
+    font-weight: 600;
+}
+
 /* =========================================================
    RESPONSIVE
    ========================================================= */
@@ -801,6 +847,22 @@ a:hover { color: #22d3ee; text-decoration: none; }
     .form-actions { flex-direction: column-reverse; }
     .form-actions .btn,
     .form-actions .btn-outline { width: 100%; justify-content: center; }
+
+    .filter-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-actions .btn,
+    .filter-actions .btn-outline {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 /* =========================================================

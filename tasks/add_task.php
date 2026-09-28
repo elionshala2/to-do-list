@@ -9,28 +9,48 @@ require_login();
 
 $user_id = $_SESSION['user_id'];
 $errors  = [];
+$categories = [];
+$inbox_id = 0;
 $old = [
     'title'       => '',
     'description' => '',
     'priority'    => 'medium',
     'due_date'    => '',
+    'category_id' => 0,
 ];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+try {
+    ensure_categories_schema($conn);
+    $inbox_id = ensure_user_inbox_category($conn, $user_id);
+    assign_inbox_to_uncategorized_tasks($conn, $user_id, $inbox_id);
+    $categories = get_user_categories($conn, $user_id);
+    $old['category_id'] = $inbox_id;
+} catch (mysqli_sql_exception $e) {
+    error_log("Add task setup error: " . $e->getMessage());
+    $errors[] = 'Diçka shkoi gabim. Provo përsëri.';
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && empty($errors)) {
 
     if (!verify_csrf($_POST['csrf'] ?? '')) {
-        $errors[] = 'Kerkese e pavlefshme. Provo perseri.';
+        $errors[] = 'Kërkesë e pavlefshme. Provo përsëri.';
     } else {
         $old['title']       = trim($_POST['title'] ?? '');
         $old['description'] = trim($_POST['description'] ?? '');
         $old['priority']    = $_POST['priority'] ?? 'medium';
         $old['due_date']    = trim($_POST['due_date'] ?? '');
+        $old['category_id'] = normalize_user_category_id(
+            $conn,
+            $user_id,
+            $_POST['category_id'] ?? 0,
+            $inbox_id
+        );
 
         // Validime
         if ($old['title'] === '') {
-            $errors[] = 'Titulli eshte i detyrueshem.';
+            $errors[] = 'Titulli është i detyrueshëm.';
         } elseif (mb_strlen($old['title']) > 255) {
-            $errors[] = 'Titulli nuk duhet te kaloje 255 karaktere.';
+            $errors[] = 'Titulli nuk duhet të kalojë 255 karaktere.';
         }
 
         if (!in_array($old['priority'], ['low', 'medium', 'high'], true)) {
@@ -40,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($old['due_date'] !== '') {
             $d = DateTime::createFromFormat('Y-m-d', $old['due_date']);
             if (!$d || $d->format('Y-m-d') !== $old['due_date']) {
-                $errors[] = 'Date e pavlefshme.';
+                $errors[] = 'Datë e pavlefshme.';
             }
         }
 
@@ -49,14 +69,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $due = $old['due_date'] === '' ? null : $old['due_date'];
 
                 $stmt = $conn->prepare(
-                    "INSERT INTO tasks (user_id, title, description, priority, due_date)
-                     VALUES (?, ?, ?, ?, ?)"
+                    "INSERT INTO tasks (user_id, category_id, title, description, priority, due_date)
+                     VALUES (?, ?, ?, ?, ?, ?)"
                 );
 
-                // Bind: i=int, s=string. Kur due=null, bind gjithashtu si 's'
                 $stmt->bind_param(
-                    "issss",
+                    "iissss",
                     $user_id,
+                    $old['category_id'],
                     $old['title'],
                     $old['description'],
                     $old['priority'],
@@ -66,12 +86,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute();
                 $stmt->close();
 
-                $_SESSION['flash_success'] = 'Detyra u shtua me sukses!';
+                $_SESSION['flash_success'] = 'Detyra u shtua me sukses.';
                 redirect('../dashboard.php');
 
             } catch (mysqli_sql_exception $e) {
                 error_log("Add task error: " . $e->getMessage());
-                $errors[] = 'Diqka shkoi gabim. Provo perseri.';
+                $errors[] = 'Diçka shkoi gabim. Provo përsëri.';
             }
         }
     }
@@ -129,6 +149,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <label>Data (opsionale)</label>
         <input type="date" name="due_date" value="<?= e($old['due_date']) ?>">
+
+        <label>Kategoria</label>
+        <select name="category_id" required>
+            <?php foreach ($categories as $category): ?>
+                <option value="<?= (int)$category['id'] ?>" <?= (int)$old['category_id'] === (int)$category['id'] ? 'selected' : '' ?>>
+                    <?= e($category['name']) ?><?= (int)$category['is_default'] === 1 ? ' (Inbox)' : '' ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
 
         <div class="form-actions">
             <a href="../dashboard.php" class="btn-outline">Anulo</a>
