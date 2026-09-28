@@ -31,5 +31,3 @@ function require_login() {
         redirect($prefix . 'login.php');
     }
 }
-
-}
