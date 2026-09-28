@@ -721,6 +721,58 @@ a:hover { color: #22d3ee; text-decoration: none; }
 }
 
 /* =========================================================
+   CATEGORIES PAGE
+   ========================================================= */
+.categories-grid {
+    display: grid;
+    grid-template-columns: minmax(280px, 340px) 1fr;
+    gap: 18px;
+    align-items: start;
+}
+
+.category-form-panel,
+.category-list-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+}
+
+.category-form-panel h2,
+.category-list-panel h2 {
+    font-size: 20px;
+    margin-bottom: 18px;
+}
+
+.category-form-panel .form-actions {
+    margin-top: 20px;
+}
+
+.category-actions {
+    justify-content: flex-end;
+}
+
+.category-empty {
+    padding: 42px 24px;
+}
+
+.category-list-panel .task-list {
+    gap: 10px;
+}
+
+.category-item {
+    align-items: center;
+}
+
+.category-item::before {
+    background: linear-gradient(135deg, var(--accent), #6366f1);
+}
+
+.category-item-actions {
+    opacity: 1;
+}
+
+/* =========================================================
    RESPONSIVE
    ========================================================= */
 @media (max-width: 600px) {
@@ -741,6 +793,10 @@ a:hover { color: #22d3ee; text-decoration: none; }
 
     .task-form { padding: 24px; }
     .auth-box { padding: 28px; margin: 40px 16px; }
+
+    .categories-grid {
+        grid-template-columns: 1fr;
+    }
 
     .form-actions { flex-direction: column-reverse; }
     .form-actions .btn,
