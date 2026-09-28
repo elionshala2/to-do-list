@@ -20,8 +20,36 @@ Nje web aplikacion per menaxhimin e detyrave me autentifikim perdoruesi, i ndert
 - Ne deshtim mesazh i pergjithshem "Kredencialet e pavlefshme"
 - Rate-Limiting max 5 tentativa per IP
 
-## Funksionet
+## Folderat
 
 ## /includes
 Brenda folderit /includes gjendet file functions.php i cili ka funksione gjenerale qe perdoren me se shumti.
 
+## /tasks
+Brenda folderit /tasks gjenden filet per menaxhimin e detyrave si shtimi i detyrave, fshirja e tyre, editimi dhe toggle 
+
+##  /assets
+Brenda folderit /assets gjinden index.js dhe style.css te cilat perdoren per stil dhe funksionalitet te webfaqes
+
+## Files
+
+## config.php
+File config.php perdoret per menaxhimin e lidhjes me databaze
+
+## dashboard.php
+File dashboard.php eshte file ne te cilin dergoet perdoruesi pas kyqjes (login.php)
+
+## index.php
+File index.php eshte file qe tregon se pse duhet te zgjedhemi ne
+
+## login.php
+File login.php perdoret per kyqjen e perdoruesve
+
+## logout.php
+File logout.php perdoret per qkyqjen e perdoruesve
+
+## signup.php
+File signup.php perdoret per krijimin e perdoruesit
+
+## LICENSE
+File LICENSE eshte licenca e perdorimit te ketij web-aplikacioni
