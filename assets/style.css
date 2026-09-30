@@ -1080,7 +1080,6 @@ main, .dashboard, .landing, .auth-box {
     height: 100%;
 }
 
-/* Butonat e navigimit — te njejtin stil si Logout */
 .navbar .btn-outline {
     display: inline-flex;
     align-items: center;
@@ -1118,7 +1117,6 @@ main, .dashboard, .landing, .auth-box {
     color: #fff;
 }
 
-/* Dropdown */
 .nav-dropdown {
     position: relative;
     height: 100%;
@@ -1177,7 +1175,6 @@ main, .dashboard, .landing, .auth-box {
     text-decoration: none;
 }
 
-/* Nav right */
 .nav-links {
     display: flex;
     align-items: center;
@@ -1189,10 +1186,9 @@ main, .dashboard, .landing, .auth-box {
 .nav-user strong { color: var(--text); font-weight: 600; }
 
 .navbar .logo {
-    margin-right: 8px;   /* new */
+    margin-right: 8px;
 }
 
-/* Responsive */
 @media (max-width: 800px) {
     .navbar { padding: 12px 16px; flex-wrap: wrap; gap: 12px; }
     .nav-left { gap: 12px; width: 100%; justify-content: space-between; flex-wrap: wrap; }

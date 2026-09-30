@@ -25,24 +25,10 @@ $username   = $_SESSION['username'] ?? '';
 </head>
 <body>
 
-<!--<nav class="navbar">
-    <a href="index.php" class="logo">To-Do List</a>
-    <div class="nav-links">
-        <?php if ($isLoggedIn): ?>
-            <span>Pershendetje, <strong><?= e($username) ?></strong></span>
-            <a href="dashboard.php" class="btn">Dashboard</a>
-            <a href="logout.php" class="btn-outline">Logout</a>
-        <?php else: ?>
-            <a href="login.php" class="btn-outline">Login</a>
-            <a href="signup.php" class="btn">Sign Up</a>
-        <?php endif; ?>
-    </div>
-</nav> -->
 <?php require_once __DIR__ . '/includes/navbar.php'; ?>
 
 <main class="landing">
 
-    <!-- HERO -->
     <section class="hero">
         <div class="hero-badge">I shpejte. I sigurt. Falas.</div>
         <h1>Organizohu. Fokusohu.<br>Arri me shume.</h1>
@@ -60,7 +46,6 @@ $username   = $_SESSION['username'] ?? '';
         </div>
     </section>
 
-    <!-- FEATURES -->
     <section class="features-section">
         <h2 class="section-title">Pse te zgjedhesh ne?</h2>
         <p class="section-sub">Gjithçka qe te duhet per produktivitet, ne nje vend.</p>

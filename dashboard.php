@@ -12,9 +12,6 @@ $username = $_SESSION['username'];
 
 $today = date('Y-m-d');
 
-// -------------------------------------------------
-// Ndihmese
-// -------------------------------------------------
 function dash_safe_color($c): string {
     return (is_string($c) && preg_match('/^#[0-9a-fA-F]{6}$/', $c)) ? $c : '#3b82f6';
 }
@@ -32,10 +29,7 @@ $priority_labels = [
     'high'   => 'Lartë',
 ];
 
-// -------------------------------------------------
-// Kategorite e userit
-// -------------------------------------------------
-$categories = [];   // id => [id, name, color]
+$categories = [];
 
 try {
     $stmt = $conn->prepare(
@@ -57,9 +51,6 @@ try {
     $categories = [];
 }
 
-// -------------------------------------------------
-// Filtrat (status + kategori)
-// -------------------------------------------------
 $filter = $_GET['filter'] ?? 'all';
 if (!in_array($filter, ['all', 'active', 'completed'], true)) {
     $filter = 'all';
@@ -73,9 +64,6 @@ if ($cat_raw === 'none') {
     $cat_filter = (string)(int)$cat_raw;
 }
 
-// -------------------------------------------------
-// Statistika (te gjitha detyrat e userit, pa filtra)
-// -------------------------------------------------
 $stats = ['total' => 0, 'active' => 0, 'completed' => 0, 'overdue' => 0];
 $count_by_cat = [];
 $count_none   = 0;
@@ -110,9 +98,6 @@ try {
 
 $percent_done = $stats['total'] > 0 ? (int)round($stats['completed'] / $stats['total'] * 100) : 0;
 
-// -------------------------------------------------
-// Detyrat (me filtra)
-// -------------------------------------------------
 $sql = "SELECT t.id, t.title, t.description, t.priority, t.due_date, t.is_completed,
                t.created_at, t.category_id
         FROM tasks t
@@ -362,7 +347,6 @@ if (!empty($_SESSION['flash_success'])) {
     <?php endif; ?>
 
     <?php if ($stats['total'] > 0): ?>
-        <!-- Statistika -->
         <div class="stats">
             <div class="stat">
                 <div class="stat-num"><?= $stats['total'] ?></div>
@@ -387,7 +371,6 @@ if (!empty($_SESSION['flash_success'])) {
         </div>
     <?php endif; ?>
 
-    <!-- Filtra -->
     <div class="dash-toolbar">
         <div class="toolbar-row">
             <span class="toolbar-label">Statusi</span>
@@ -463,7 +446,6 @@ if (!empty($_SESSION['flash_success'])) {
                 ?>
                 <li class="task-item <?= $isDone ? 'completed' : '' ?>">
 
-                    <!-- Toggle complete -->
                     <form action="tasks/toggle_task.php" method="POST" class="task-toggle">
                         <input type="hidden" name="csrf" value="<?= e(csrf_token()) ?>">
                         <input type="hidden" name="id"   value="<?= (int)$task['id'] ?>">
@@ -472,7 +454,6 @@ if (!empty($_SESSION['flash_success'])) {
                         </button>
                     </form>
 
-                    <!-- Permbajtja -->
                     <div class="task-body">
                         <div class="task-title">
                             <?= e($task['title']) ?>
@@ -504,7 +485,6 @@ if (!empty($_SESSION['flash_success'])) {
                         </div>
                     </div>
 
-                    <!-- Veprimet -->
                     <div class="task-actions">
                         <a href="tasks/edit_task.php?id=<?= (int)$task['id'] ?>" class="icon-btn" title="Edito">✏️</a>
 

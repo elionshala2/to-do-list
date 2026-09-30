@@ -60,7 +60,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($stmt->num_rows > 0) {
                     $errors[] = 'Ky email ose username është regjistruar më parë.';
                 } else {
-                    // Hash password
                     $hash = password_hash($password, PASSWORD_DEFAULT);
 
                     $stmt = $conn->prepare(

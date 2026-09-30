@@ -456,7 +456,6 @@ if (!empty($_SESSION['flash_success'])) {
             }
 
             head.addEventListener('click', function (e) {
-                // mos e hap/mbyll kur klikohet edit/delete
                 if (e.target.closest('.cat-actions')) return;
                 toggle();
             });

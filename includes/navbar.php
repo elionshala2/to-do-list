@@ -6,7 +6,6 @@ $isLoggedIn = !empty($_SESSION['user_id']);
 $username   = $_SESSION['username'] ?? '';
 $current    = basename($_SERVER['PHP_SELF']);
 
-// Detect if we're in the tasks folder
 $inTasks = str_contains($_SERVER['PHP_SELF'], '/tasks/');
 $prefix = $inTasks ? '../' : '';
 ?>
