@@ -68,6 +68,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     );
                     $stmt->bind_param("sss", $username, $email, $hash);
                     $stmt->execute();
+                    
+                    // Get the new user ID
+                    $new_user_id = $conn->insert_id;
+                    
+                    // Create default Inbox category
+                    ensure_default_category($conn, $new_user_id);
 
                     $_SESSION['flash_success'] = 'Llogaria u krijua me sukses! Tani mund te hyni.';
                     redirect('login.php');

@@ -14,7 +14,25 @@ $old = [
     'description' => '',
     'priority'    => 'medium',
     'due_date'    => '',
+    'category_id' => '',
 ];
+
+// Load user's categories
+$categories = [];
+try {
+    $stmt = $conn->prepare(
+        "SELECT id, name, color FROM categories WHERE user_id = ? ORDER BY name ASC"
+    );
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $categories[] = $row;
+    }
+    $stmt->close();
+} catch (mysqli_sql_exception $e) {
+    error_log("Load categories error: " . $e->getMessage());
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
@@ -25,6 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $old['description'] = trim($_POST['description'] ?? '');
         $old['priority']    = $_POST['priority'] ?? 'medium';
         $old['due_date']    = trim($_POST['due_date'] ?? '');
+        $old['category_id'] = $_POST['category_id'] ?? '';
 
         // Validime
         if ($old['title'] === '') {
@@ -47,20 +66,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($errors)) {
             try {
                 $due = $old['due_date'] === '' ? null : $old['due_date'];
+                $category_id = !empty($old['category_id']) ? (int)$old['category_id'] : null;
 
                 $stmt = $conn->prepare(
-                    "INSERT INTO tasks (user_id, title, description, priority, due_date)
-                     VALUES (?, ?, ?, ?, ?)"
+                    "INSERT INTO tasks (user_id, title, description, priority, due_date, category_id)
+                     VALUES (?, ?, ?, ?, ?, ?)"
                 );
 
-                // Bind: i=int, s=string. Kur due=null, bind gjithashtu si 's'
                 $stmt->bind_param(
-                    "issss",
+                    "issssi",
                     $user_id,
                     $old['title'],
                     $old['description'],
                     $old['priority'],
-                    $due
+                    $due,
+                    $category_id
                 );
 
                 $stmt->execute();
@@ -129,6 +149,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <label>Data (opsionale)</label>
         <input type="date" name="due_date" value="<?= e($old['due_date']) ?>">
+
+        <label>Kategoria</label>
+        <select name="category_id">
+            <option value="">-- Pa kategori --</option>
+            <?php foreach ($categories as $cat): ?>
+                <option value="<?= (int)$cat['id'] ?>" <?= $old['category_id'] == $cat['id'] ? 'selected' : '' ?>>
+                    <?= e($cat['name']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
 
         <div class="form-actions">
             <a href="../dashboard.php" class="btn-outline">Anulo</a>

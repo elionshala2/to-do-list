@@ -22,7 +22,7 @@ if ($task_id <= 0) {
 // -------------------------------------------------
 function load_task($conn, $task_id, $user_id) {
     $stmt = $conn->prepare(
-        "SELECT id, title, description, priority, due_date, is_completed
+        "SELECT id, title, description, priority, due_date, is_completed, category_id
          FROM tasks
          WHERE id = ? AND user_id = ?
          LIMIT 1"
@@ -49,7 +49,25 @@ $old = [
     'description' => $task['description'] ?? '',
     'priority'    => $task['priority'],
     'due_date'    => $task['due_date'] ?? '',
+    'category_id' => $task['category_id'] ?? '',
 ];
+
+// Load user's categories
+$categories = [];
+try {
+    $stmt = $conn->prepare(
+        "SELECT id, name, color FROM categories WHERE user_id = ? ORDER BY name ASC"
+    );
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $categories[] = $row;
+    }
+    $stmt->close();
+} catch (mysqli_sql_exception $e) {
+    error_log("Load categories error: " . $e->getMessage());
+}
 
 // -------------------------------------------------
 // Dergimi i formes
@@ -63,6 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $old['description'] = trim($_POST['description'] ?? '');
         $old['priority']    = $_POST['priority'] ?? 'medium';
         $old['due_date']    = trim($_POST['due_date'] ?? '');
+        $old['category_id'] = $_POST['category_id'] ?? '';
 
         // Validime
         if ($old['title'] === '') {
@@ -85,20 +104,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (empty($errors)) {
             try {
                 $due = $old['due_date'] === '' ? null : $old['due_date'];
+                $category_id = !empty($old['category_id']) ? (int)$old['category_id'] : null;
 
                 // UPDATE — VETËM nëse task i përket userit (dyfish siguri)
                 $stmt = $conn->prepare(
                     "UPDATE tasks
-                     SET title = ?, description = ?, priority = ?, due_date = ?
+                     SET title = ?, description = ?, priority = ?, due_date = ?, category_id = ?
                      WHERE id = ? AND user_id = ?"
                 );
 
                 $stmt->bind_param(
-                    "ssssii",
+                    "ssssiii",
                     $old['title'],
                     $old['description'],
                     $old['priority'],
                     $due,
+                    $category_id,
                     $task_id,
                     $user_id
                 );
@@ -168,6 +189,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <label>Data (opsionale)</label>
         <input type="date" name="due_date" value="<?= e($old['due_date']) ?>">
+
+        <label>Kategoria</label>
+        <select name="category_id">
+            <option value="">-- Pa kategori --</option>
+            <?php foreach ($categories as $cat): ?>
+                <option value="<?= (int)$cat['id'] ?>" <?= $old['category_id'] == $cat['id'] ? 'selected' : '' ?>>
+                    <?= e($cat['name']) ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
 
         <div class="form-actions">
             <a href="../dashboard.php" class="btn-outline">Anulo</a>

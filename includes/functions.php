@@ -31,3 +31,24 @@ function require_login() {
         redirect($prefix . 'login.php');
     }
 }
+
+// Siguron qe useri te kaje kategorine default "Inbox"
+function ensure_default_category($conn, $user_id) {
+    // Kontrollo nse ekziston ndonje kategori
+    $stmt = $conn->prepare("SELECT COUNT(*) as count FROM categories WHERE user_id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $stmt->close();
+    
+    // Nese nuk ka kategori, krijo Inbox default
+    if ($row['count'] == 0) {
+        $stmt = $conn->prepare(
+            "INSERT INTO categories (user_id, name, color, is_default) VALUES (?, 'Inbox', '#3b82f6', 1)"
+        );
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $stmt->close();
+    }
+}
